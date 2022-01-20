@@ -1,5 +1,5 @@
 <?php
-require 'bootstrap/app.php';
+require '../bootstrap/app.php';
 
 $statement = "
     CREATE TABLE `ads` (
@@ -15,6 +15,6 @@ $statement = "
 try {
     $createTable = $dbConnection->exec($statement);
     echo "Success!\n";
-} catch (\PDOException $e) {
+} catch (PDOException $e) {
     exit($e->getMessage());
 }
