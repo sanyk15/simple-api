@@ -19,30 +19,33 @@ class AdController
         $this->adGateway = new AdGateway($db);
     }
 
+    /**
+     * Обработка пришедшего запроса
+     */
     public function processRequest()
     {
-        switch ($this->requestMethod) {
-            case 'GET':
-                try {
+        try {
+            switch ($this->requestMethod) {
+                case 'GET':
                     $response = $this->{$this->postfix}();
-                } catch (Throwable $e) {
-                    $response = $this->notFoundResponse();
-                }
 
-                break;
-            case 'POST':
-                if ($this->postfix) {
-                    $response = $this->update((int)$this->postfix);
-                } else {
-                    $response = $this->create();
-                }
-                break;
-            case 'DELETE':
-                $response = $this->delete($this->postfix);
-                break;
-            default:
-                $response = $this->notFoundResponse();
-                break;
+                    break;
+                case 'POST':
+                    if ($this->postfix) {
+                        $response = $this->update((int)$this->postfix);
+                    } else {
+                        $response = $this->create();
+                    }
+                    break;
+                case 'DELETE':
+                    $response = $this->delete($this->postfix);
+                    break;
+                default:
+                    $response = $this->notFoundResponse();
+                    break;
+            }
+        } catch (Throwable $e) {
+            $response = $this->notFoundResponse();
         }
 
         header($response['status_code_header']);
@@ -52,11 +55,18 @@ class AdController
         }
     }
 
+    /**
+     * Возвращение релевантного объявления
+     *
+     * Возвращает объявление с наибольшей ценой и доступными показами
+     *
+     * @return array
+     */
     private function relevant(): array
     {
         $result = $this->adGateway->relevant();
 
-        if (! $result) {
+        if (!$result) {
             return $this->notFoundResponse();
         }
 
@@ -74,11 +84,16 @@ class AdController
         return $response;
     }
 
+    /**
+     * Создание нового объявления
+     *
+     * @return array
+     */
     private function create(): array
     {
         $input = $_POST;
 
-        if (! $this->validate($input)) {
+        if (!$this->validate($input)) {
             return $this->unprocessableEntityResponse();
         }
 
@@ -95,17 +110,23 @@ class AdController
         return $response;
     }
 
-    private function update($id): array
+    /**
+     * Обновление объявления
+     *
+     * @param int $id
+     * @return array
+     */
+    private function update(int $id): array
     {
         $result = $this->adGateway->find($id);
 
-        if (! $result) {
+        if (!$result) {
             return $this->notFoundResponse();
         }
 
         $input = $_POST;
 
-        if (! $this->validate($input)) {
+        if (!$this->validate($input)) {
             return $this->unprocessableEntityResponse();
         }
 
@@ -122,11 +143,17 @@ class AdController
         return $response;
     }
 
-    private function delete($id): array
+    /**
+     * Удаление объявления
+     *
+     * @param int $id
+     * @return array
+     */
+    private function delete(int $id): array
     {
         $result = $this->adGateway->find($id);
 
-        if (! $result) {
+        if (!$result) {
             return $this->notFoundResponse();
         }
 
@@ -138,19 +165,30 @@ class AdController
         return $response;
     }
 
-    private function validate($input): bool
+    /**
+     * Валидация request input
+     *
+     * @param array $input
+     * @return bool
+     */
+    private function validate(array $input): bool
     {
-        if (! isset($input['text'])) {
+        if (!isset($input['text'])) {
             return false;
         }
 
-        if (! isset($input['price'])) {
+        if (!isset($input['price'])) {
             return false;
         }
 
         return true;
     }
 
+    /**
+     * Возврат ошибки при невалидных данных в запросе
+     *
+     * @return array
+     */
     private function unprocessableEntityResponse(): array
     {
         $response['status_code_header'] = 'HTTP/1.1 200 OK';
@@ -163,6 +201,11 @@ class AdController
         return $response;
     }
 
+    /**
+     * Возврат 404 ошибки, при ошибочном роуте или методе запроса
+     *
+     * @return array
+     */
     private function notFoundResponse(): array
     {
         $response['status_code_header'] = 'HTTP/1.1 200 OK';

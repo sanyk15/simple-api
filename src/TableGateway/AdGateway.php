@@ -14,7 +14,13 @@ class AdGateway
         $this->db = $db;
     }
 
-    public function find($id): array
+    /**
+     * Поиск записи по id
+     *
+     * @param int $id
+     * @return array
+     */
+    public function find(int $id): array
     {
         $statement = "
             SELECT id, text, banner
@@ -26,12 +32,18 @@ class AdGateway
             $statement = $this->db->prepare($statement);
             $statement->execute(array($id));
 
-            return $statement->fetch(PDO::FETCH_ASSOC);
+            return $statement->fetch(PDO::FETCH_ASSOC) ?? [];
         } catch (PDOException $e) {
             exit($e->getMessage());
         }
     }
 
+    /**
+     * Вставка новой записи
+     *
+     * @param array $input
+     * @return string
+     */
     public function insert(array $input): string
     {
         $statement = "
@@ -54,7 +66,14 @@ class AdGateway
         }
     }
 
-    public function update($id, array $input): int
+    /**
+     * Обновление записи по id
+     *
+     * @param int $id
+     * @param array $input
+     * @return int
+     */
+    public function update(int $id, array $input): int
     {
         $statement = "
             UPDATE `ads`
@@ -82,7 +101,13 @@ class AdGateway
         }
     }
 
-    public function delete($id): int
+    /**
+     * Удаление записи по id
+     *
+     * @param int $id
+     * @return int
+     */
+    public function delete(int $id): int
     {
         $statement = "
             DELETE FROM ads
@@ -99,7 +124,15 @@ class AdGateway
         }
     }
 
-    public function relevant()
+    /**
+     * Отдача релевантной записи
+     *
+     * Поиск записи с наибольшей ценой
+     * и количеством показов не равным 0
+     *
+     * @return array
+     */
+    public function relevant(): array
     {
         $statement = "
             SELECT *
@@ -113,7 +146,7 @@ class AdGateway
             $statement = $this->db->prepare($statement);
             $statement->execute();
 
-            return $statement->fetch(PDO::FETCH_ASSOC);
+            return $statement->fetch(PDO::FETCH_ASSOC) ?? [];
         } catch (PDOException $e) {
             exit($e->getMessage());
         }
